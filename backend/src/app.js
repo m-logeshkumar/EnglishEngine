@@ -67,9 +67,11 @@ const authLimiter = rateLimit({
 
 // Apply global rate limiter
 app.use('/api', limiter);
+app.use(limiter);
 
 // Apply stricter rate limiter to auth routes
 app.use('/api/auth', authLimiter);
+app.use('/auth', authLimiter);
 
 // Request parsing with size limits
 app.use(express.json({ limit: '1mb' }));
@@ -87,12 +89,22 @@ app.get('/', (_req, res) => {
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'voiceiq-backend', environment: env.nodeEnv });
 });
+app.get('/health', (_req, res) => {
+  res.json({ ok: true, service: 'voiceiq-backend', environment: env.nodeEnv });
+});
 
 // Routes with validation
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
 app.use('/api/content', validateRequest, contentRoutes);
+app.use('/content', validateRequest, contentRoutes);
+
 app.use('/api/scores', validateRequest, scoreRoutes);
+app.use('/scores', validateRequest, scoreRoutes);
+
 app.use('/api/assessments', validateRequest, assessmentRoutes);
+app.use('/assessments', validateRequest, assessmentRoutes);
 
 // 404 handler
 app.use(notFoundHandler);
