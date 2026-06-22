@@ -78,6 +78,11 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 // Logging
 app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'));
 
+// Root endpoint for Render health checks
+app.get('/', (_req, res) => {
+  res.status(200).send('VoiceIQ Backend is active.');
+});
+
 // Health check (not rate limited)
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'voiceiq-backend', environment: env.nodeEnv });
