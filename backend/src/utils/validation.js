@@ -164,33 +164,61 @@ export function validateLogin(req, res, next) {
   next();
 }
 export function validateScoreSubmission(req, res, next) {
-  const { score, assessmentType } = req.body;
+  const { userId, userName, overall, reading, listening, speaking, performanceLevel, report } = req.body;
 
-  if (score === undefined || score === null) {
+  if (!userId || typeof userId !== 'string') {
     return res.status(400).json({
       success: false,
-      message: 'Score is required'
+      message: 'userId is required'
     });
   }
 
-  if (typeof score !== 'number') {
+  if (!userName || typeof userName !== 'string') {
     return res.status(400).json({
       success: false,
-      message: 'Score must be a number'
+      message: 'userName is required'
     });
   }
 
-  if (score < 0 || score > 100) {
+  if (overall === undefined || overall === null || typeof overall !== 'number') {
     return res.status(400).json({
       success: false,
-      message: 'Score must be between 0 and 100'
+      message: 'Valid overall score is required'
     });
   }
 
-  if (!assessmentType) {
+  if (reading === undefined || reading === null || typeof reading !== 'number') {
     return res.status(400).json({
       success: false,
-      message: 'Assessment type is required'
+      message: 'Valid reading score is required'
+    });
+  }
+
+  if (listening === undefined || listening === null || typeof listening !== 'number') {
+    return res.status(400).json({
+      success: false,
+      message: 'Valid listening score is required'
+    });
+  }
+
+  if (speaking === undefined || speaking === null || typeof speaking !== 'number') {
+    return res.status(400).json({
+      success: false,
+      message: 'Valid speaking score is required'
+    });
+  }
+
+  if (!performanceLevel) {
+    return res.status(400).json({
+      success: false,
+      message: 'performanceLevel is required'
+    });
+  }
+
+  if (!report || typeof report !== 'object') {
+    return res.status(400).json({
+      success: false,
+      message: 'Valid report object is required'
     });
   }
 

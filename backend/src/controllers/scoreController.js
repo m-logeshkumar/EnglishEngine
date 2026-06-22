@@ -15,7 +15,7 @@ function getYesterdayKeyUTC(now = new Date()) {
 
 export async function saveScore(req, res, next) {
   try {
-    const { userId, name, college, overall, scores, performanceLevel, strengths, weaknesses, tips, ...rest } = req.body;
+    const { userId, userName, college, overall, reading, listening, speaking, performanceLevel, report } = req.body;
 
     // Security check: restrict non-admins from spoofing other user IDs
     if (req.user.role !== 'admin' && userId !== req.user.id) {
@@ -23,77 +23,21 @@ export async function saveScore(req, res, next) {
       throw new AppError('Forbidden: Cannot save score for another user', 'AUTH_FORBIDDEN', 403);
     }
 
-    // Validate required fields
-    if (!userId || typeof userId !== 'string') {
-      throw new AppError('Valid userId is required', 'VALIDATION_ERROR', 400);
-    }
-
-    if (!name || typeof name !== 'string' || name.trim().length < 2) {
-      throw new AppError('Valid name is required', 'VALIDATION_ERROR', 400);
-    }
-
-    // Validate score data
-    const scoreValidation = validateScore(overall);
-    if (!scoreValidation.valid) {
-      throw new AppError(scoreValidation.error, 'VALIDATION_ERROR', 400);
-    }
-
-    // Validate scores object
-    if (!scores || typeof scores !== 'object') {
-      throw new AppError('Valid scores object is required', 'VALIDATION_ERROR', 400);
-    }
-
-    const { reading, listening, speaking } = scores;
-    if (typeof reading !== 'number' || typeof listening !== 'number' || typeof speaking !== 'number') {
-      throw new AppError('All scores must be numbers', 'VALIDATION_ERROR', 400);
-    }
-
-    // Validate score ranges
-    for (const [key, value] of Object.entries(scores)) {
-      if (typeof value !== 'number' || value < 0 || value > 100) {
-        throw new AppError(`Score for ${key} must be between 0 and 100`, 'VALIDATION_ERROR', 400);
-      }
-    }
-
-    // Validate performanceLevel
-    const validLevels = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
-    if (!performanceLevel || !validLevels.includes(performanceLevel)) {
-      throw new AppError('Valid performanceLevel is required', 'VALIDATION_ERROR', 400);
-    }
-
-    // Sanitize strings
-    const sanitizedName = sanitize(name);
+    // Sanitize values
+    const sanitizedUserName = sanitize(userName);
     const sanitizedCollege = sanitize(college || '');
 
-    // Validate and sanitize arrays
-    const sanitizedStrengths = Array.isArray(strengths) 
-      ? strengths.filter(s => typeof s === 'string' && s.trim().length > 0).map(s => sanitize(s))
-      : [];
-      
-    const sanitizedWeaknesses = Array.isArray(weaknesses)
-      ? weaknesses.filter(w => typeof w === 'string' && w.trim().length > 0).map(w => sanitize(w))
-      : [];
-      
-    const sanitizedTips = Array.isArray(tips)
-      ? tips.filter(t => typeof t === 'string' && t.trim().length > 0).map(t => sanitize(t))
-      : [];
-
-    // Create score object
+    // Create score object matching Score schema
     const scoreData = {
       userId,
-      name: sanitizedName,
+      userName: sanitizedUserName,
       college: sanitizedCollege,
-      overall,
-      scores: {
-        reading: Math.round(reading),
-        listening: Math.round(listening),
-        speaking: Math.round(speaking),
-      },
+      overall: Math.round(overall),
+      reading: Math.round(reading),
+      listening: Math.round(listening),
+      speaking: Math.round(speaking),
       performanceLevel,
-      strengths: sanitizedStrengths,
-      weaknesses: sanitizedWeaknesses,
-      tips: sanitizedTips,
-      ...rest,
+      report,
     };
 
     // Save score
